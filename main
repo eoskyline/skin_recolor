@@ -1,66 +1,105 @@
--- SHINDO_CUSTOMIZER v1.0
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({Name = "Shindo Puppet Master", HidePremium = true, SaveConfig = true, ConfigFolder = "ShindoPuppetConfig"})
+local Window = Rayfield:CreateWindow({
+   Name = "Labelay",
+   LoadingTitle = "Caue dando o cu...",
+   LoadingSubtitle = "may work idk",
+   ConfigurationSaving = { Enabled = false }
+})
 
-getgenv().RainbowActive = false
 local player = game:GetService("Players").LocalPlayer
 local startevent = player:WaitForChild("startevent")
+local targetPlayer = ""
+local tracking = false
+local rainbowActive = false
+
 
 local function formatColor(c)
     return string.format("%f,%f,%f", c.R, c.G, c.B)
 end
 
-local MainTab = Window:MakeTab({
-    Name = "Puppet Color",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
 
-MainTab:AddSection({
-    Name = "Static Color"
-})
+local AppearanceTab = Window:CreateTab("Aparência", 4483345998)
 
-MainTab:AddColorpicker({
-    Name = "Select Static Color",
-    Default = Color3.fromRGB(255, 0, 0),
+AppearanceTab:CreateColorPicker({
+    Name = "Hair Color",
+    Default = Color3.fromRGB(255, 255, 255),
     Callback = function(Value)
-        getgenv().RainbowActive = false
-        
-        local args = {
-            [1] = "skin",
-            [2] = formatColor(Value)
-        }
-        
-        startevent:FireServer(unpack(args))
+        startevent:FireServer("hair", formatColor(Value))
     end
 })
 
-MainTab:AddSection({
-    Name = "Rainbow Mode"
+AppearanceTab:CreateColorPicker({
+    Name = "Skin Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(Value)
+        startevent:FireServer("skin", formatColor(Value))
+    end
 })
 
-MainTab:AddToggle({
-    Name = "Toggle Rainbow",
-    Default = false,
+AppearanceTab:CreateToggle({
+    Name = "Rainbow Mode",
+    CurrentValue = false,
     Callback = function(Value)
-        getgenv().RainbowActive = Value
-        
-        if getgenv().RainbowActive then
+        rainbowActive = Value
+        if rainbowActive then
             task.spawn(function()
-                local counter = 0
-                local speed = 5 -- Velocidade padrão
-                while getgenv().RainbowActive do
-                    counter = counter + (speed / 100)
-                    local color = Color3.fromHSV(counter % 1, 1, 1)
-                    startevent:FireServer("skin", formatColor(color))
-                    task.wait(0.1) -- Tempo de segurança
+                while rainbowActive do
+                    for i = 0, 1, 0.01 do
+                        if not rainbowActive then break end
+                        local color = Color3.fromHSV(i, 1, 1)
+                        startevent:FireServer("skin", formatColor(color))
+                        task.wait(0.1)
+                    end
                 end
-                warn("!!! LOOP RAINBOW INTERROMPIDO !!!")
             end)
         end
     end
 })
 
 
-OrionLib:Init()
+local MonitorTab = Window:CreateTab("Monitor HP", 4483345998)
+
+local LabelNome = MonitorTab:CreateLabel("Alvo: None")
+local LabelHP = MonitorTab:CreateLabel("HP: --- / ---")
+
+MonitorTab:CreateInput({
+   Name = "Player Name",
+   PlaceholderText = "Name...",
+   Callback = function(Text)
+      targetPlayer = Text
+      LabelNome:Set("Target: " .. targetPlayer)
+   end,
+})
+
+MonitorTab:CreateToggle({
+   Name = "HP windown",
+   CurrentValue = false,
+   Callback = function(Value)
+      tracking = Value
+      if tracking then
+         task.spawn(function()
+            while tracking do
+               local p = game.Players:FindFirstChild(targetPlayer)
+               if p then
+                  local stats = p:FindFirstChild("StatStorage")
+                  local hpObj = stats and (stats:FindFirstChild("fakehealth") or stats:FindFirstChild("Health"))
+                  local maxHpObj = stats and stats:FindFirstChild("MaxHealth")
+                  
+                  local char = p.Character
+                  local hum = char and char:FindFirstChild("Humanoid")
+
+                  local atual = hpObj and hpObj.Value or (hum and hum.Health or 0)
+                  local maximo = maxHpObj and maxHpObj.Value or (hum and hum.MaxHealth or 0)
+
+                  LabelHP:Set(string.format("HP: %d / %d", math.floor(atual), math.floor(maximo)))
+               else
+                  LabelHP:Set("Jogador não encontrado ou Offline")
+               end
+               task.wait(0.5) -- Atualização rápida para ver o HP caindo em tempo real
+            end
+            LabelHP:Set("HP: --- / ---")
+         end)
+      end
+   end,
+})
