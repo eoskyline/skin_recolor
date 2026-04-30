@@ -1,0 +1,66 @@
+-- SHINDO_CUSTOMIZER v1.0
+
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "Shindo Puppet Master", HidePremium = true, SaveConfig = true, ConfigFolder = "ShindoPuppetConfig"})
+
+getgenv().RainbowActive = false
+local player = game:GetService("Players").LocalPlayer
+local startevent = player:WaitForChild("startevent")
+
+local function formatColor(c)
+    return string.format("%f,%f,%f", c.R, c.G, c.B)
+end
+
+local MainTab = Window:MakeTab({
+    Name = "Puppet Color",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+MainTab:AddSection({
+    Name = "Static Color"
+})
+
+MainTab:AddColorpicker({
+    Name = "Select Static Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(Value)
+        getgenv().RainbowActive = false
+        
+        local args = {
+            [1] = "skin",
+            [2] = formatColor(Value)
+        }
+        
+        startevent:FireServer(unpack(args))
+    end
+})
+
+MainTab:AddSection({
+    Name = "Rainbow Mode"
+})
+
+MainTab:AddToggle({
+    Name = "Toggle Rainbow",
+    Default = false,
+    Callback = function(Value)
+        getgenv().RainbowActive = Value
+        
+        if getgenv().RainbowActive then
+            task.spawn(function()
+                local counter = 0
+                local speed = 5 -- Velocidade padrão
+                while getgenv().RainbowActive do
+                    counter = counter + (speed / 100)
+                    local color = Color3.fromHSV(counter % 1, 1, 1)
+                    startevent:FireServer("skin", formatColor(color))
+                    task.wait(0.1) -- Tempo de segurança
+                end
+                warn("!!! LOOP RAINBOW INTERROMPIDO !!!")
+            end)
+        end
+    end
+})
+
+
+OrionLib:Init()
