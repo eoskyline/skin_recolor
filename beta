@@ -1,0 +1,81 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Shindo Customize",
+   LoadingTitle = "loading...",
+   LoadingSubtitle = "may work idk",
+   ConfigurationSaving = { Enabled = false }
+})
+
+
+local player = game:GetService("Players").LocalPlayer
+local startevent = player:WaitForChild("startevent")
+
+
+local function toShindoColor(color)
+    return string.format("%f,%f,%f", color.R, color.G, color.B)
+end
+
+
+local AppearanceTab = Window:CreateTab("Customização", 4483345998)
+
+
+AppearanceTab:CreateColorPicker({
+    Name = "Hair Color",
+    Default = Color3.fromRGB(255, 255, 255),
+    Callback = function(Value)
+        startevent:FireServer("hair", toShindoColor(Value))
+    end
+})
+
+
+AppearanceTab:CreateColorPicker({
+    Name = "Skin Color",
+    Default = Color3.fromRGB(255, 200, 150),
+    Callback = function(Value)
+        startevent:FireServer("skin", toShindoColor(Value))
+    end
+})
+
+local MonitorTab = Window:CreateTab("Monitor HP", 4483345998)
+
+local LabelHP = MonitorTab:CreateLabel("Waiting Target...")
+local targetPlayer = ""
+local tracking = false
+
+MonitorTab:CreateInput({
+   Name = "Username",
+   PlaceholderText = "Ex: @RobloxUser",
+   Callback = function(Text)
+      targetPlayer = Text
+   end,
+})
+
+MonitorTab:CreateToggle({
+   Name = "fakehealth",
+   CurrentValue = false,
+   Callback = function(Value)
+      tracking = Value
+      if tracking then
+         task.spawn(function()
+            while tracking do
+               local p = game.Players:FindFirstChild(targetPlayer)
+               if p then
+                  local stats = p:FindFirstChild("StatStorage")
+                  local hpObj = stats and stats:FindFirstChild("fakehealth")
+                  
+                  if hpObj then
+                     LabelHP:Set(string.format("Jogador: %s | HP: %d", targetPlayer, math.floor(hpObj.Value)))
+                  else
+                     LabelHP:Set("Valor 'fakehealth' não encontrado.")
+                  end
+               else
+                  LabelHP:Set("Jogador Offline ou Nick Incorreto")
+               end
+               task.wait(1)
+            end
+            LabelHP:Set("Rastreamento Desativado")
+         end)
+      end
+   end,
+})
