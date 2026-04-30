@@ -2,7 +2,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "Labelay",
-   LoadingTitle = "Caue dando o cu...",
+   LoadingTitle = "Loading...",
    LoadingSubtitle = "may work idk",
    ConfigurationSaving = { Enabled = false }
 })
@@ -19,7 +19,7 @@ local function formatColor(c)
 end
 
 
-local AppearanceTab = Window:CreateTab("Aparência", 4483345998)
+local AppearanceTab = Window:CreateTab("Skin", 4483345998)
 
 AppearanceTab:CreateColorPicker({
     Name = "Hair Color",
