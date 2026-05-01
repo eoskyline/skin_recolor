@@ -1,49 +1,23 @@
 local Kavo = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Kavo.CreateLib("Shindo Customize - CaueHeiky311", "BloodTheme")
+local Window = Kavo.CreateLib("Shindo Recolor", "GrapeTheme")
 
 local player = game:GetService("Players").LocalPlayer
 local startevent = player:WaitForChild("startevent")
-local targetPlayer = ""
-local tracking = false
 
 local function toShindoColor(color)
-    return string.format("%f,%f,%f", color.r, color.g, color.b)
+    local r = tonumber(string.format("%.3f", color.r))
+    local g = tonumber(string.format("%.3f", color.g))
+    local b = tonumber(string.format("%.3f", color.b))
+    return r .. "," .. g .. "," .. b
 end
 
-local Tab1 = Window:NewTab("Aparência")
-local Section1 = Tab1:NewSection("Customização")
+local Tab1 = Window:NewTab("Appearance")
+local Section1 = Tab1:NewSection("Visual Customize")
 
-Section1:NewColorPicker("Cor do Cabelo", "Ajuste para itens de catálogo", Color3.fromRGB(255,255,255), function(color)
-    startevent:FireServer("hair", toShindoColor(color))
+Section1:NewColorPicker("Hair Color", "Change hair color", Color3.fromRGB(255,255,255), function(color)
+    startevent:FireServer("haircolor", toShindoColor(color))
 end)
 
-Section1:NewColorPicker("Cor da Pele", "Muda a cor da pele", Color3.fromRGB(255,0,0), function(color)
+Section1:NewColorPicker("Skin Color", "Change skin race color", Color3.fromRGB(255,0,0), function(color)
     startevent:FireServer("skin", toShindoColor(color))
-end)
-
-local Tab2 = Window:NewTab("Monitor HP")
-local Section2 = Tab2:NewSection("Rastreador de FakeHealth")
-
-Section2:NewTextBox("Username do Alvo", "Digite o @ do jogador", function(txt)
-    targetPlayer = txt
-end)
-
-Section2:NewToggle("Rastrear HP", "Verifique o HP no Console (F9)", function(state)
-    tracking = state
-    if tracking then
-        task.spawn(function()
-            while tracking do
-                local p = game.Players:FindFirstChild(targetPlayer)
-                if p then
-                    local stats = p:FindFirstChild("StatStorage")
-                    local hpObj = stats and stats:FindFirstChild("fakehealth")
-                    
-                    if hpObj then
-                        print("HP [" .. targetPlayer .. "]: " .. math.floor(hpObj.Value))
-                    end
-                end
-                task.wait(1)
-            end
-        end)
-    end
 end)
