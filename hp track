@@ -7,7 +7,7 @@ local screenGui = Instance.new("ScreenGui", player.PlayerGui)
 screenGui.Name = "TargetSelector"
 
 local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 280, 0, 320) -- Aumentado levemente para caber o status
+mainFrame.Size = UDim2.new(0, 280, 0, 320)
 mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BorderSizePixel = 2
@@ -16,12 +16,12 @@ mainFrame.Active = true
 mainFrame.Draggable = true
 
 local title = Instance.new("TextLabel", mainFrame)
-title.Text = "Choose Target name"
+title.Text = "HP Track"
 title.Size = UDim2.new(1, 0, 0, 30)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.BackgroundColor3 = Color3.fromRGB(194, 17, 194)
 
--- Nova Label para Nome e Status
+
 local statusDisplay = Instance.new("TextLabel", mainFrame)
 statusDisplay.Text = "T: --- | idle"
 statusDisplay.Size = UDim2.new(1, 0, 0, 25)
@@ -30,7 +30,7 @@ statusDisplay.TextColor3 = Color3.fromRGB(200, 200, 200)
 statusDisplay.TextSize = 14
 statusDisplay.BackgroundTransparency = 1
 
--- Display de HP
+
 local hpDisplay = Instance.new("TextLabel", mainFrame)
 hpDisplay.Text = "HP: ---"
 hpDisplay.Size = UDim2.new(1, 0, 0, 30)
@@ -77,14 +77,14 @@ end
 task.spawn(function()
     while true do
         if tracking and targetName ~= "" then
-            -- Verifica se o jogador saiu do servidor
+            
             local pObj = game.Players:FindFirstChild(targetName)
             
             if not pObj then
                 status = "RQ"
                 statusDisplay.Text = "Alvo: " .. targetName .. " | " .. status
                 hpDisplay.Text = "HP: ---"
-                tracking = false -- Para o rastreio após detectar a saída
+                tracking = false
             else
                 local char = game.Workspace:FindFirstChild(targetName)
                 if char then
