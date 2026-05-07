@@ -1,0 +1,115 @@
+local player = game.Players.LocalPlayer
+local targetName = ""
+local tracking = false
+local status = "idle"
+
+local screenGui = Instance.new("ScreenGui", player.PlayerGui)
+screenGui.Name = "TargetSelector"
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 280, 0, 320) -- Aumentado levemente para caber o status
+mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderSizePixel = 2
+mainFrame.BorderColor3 = Color3.fromRGB(194, 17, 194)
+mainFrame.Active = true
+mainFrame.Draggable = true
+
+local title = Instance.new("TextLabel", mainFrame)
+title.Text = "Choose Target name"
+title.Size = UDim2.new(1, 0, 0, 30)
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundColor3 = Color3.fromRGB(194, 17, 194)
+
+-- Nova Label para Nome e Status
+local statusDisplay = Instance.new("TextLabel", mainFrame)
+statusDisplay.Text = "T: --- | idle"
+statusDisplay.Size = UDim2.new(1, 0, 0, 25)
+statusDisplay.Position = UDim2.new(0, 0, 0.1, 0)
+statusDisplay.TextColor3 = Color3.fromRGB(200, 200, 200)
+statusDisplay.TextSize = 14
+statusDisplay.BackgroundTransparency = 1
+
+-- Display de HP
+local hpDisplay = Instance.new("TextLabel", mainFrame)
+hpDisplay.Text = "HP: ---"
+hpDisplay.Size = UDim2.new(1, 0, 0, 30)
+hpDisplay.Position = UDim2.new(0, 0, 0.18, 0)
+hpDisplay.TextColor3 = Color3.fromRGB(0, 255, 0)
+hpDisplay.TextSize = 22
+hpDisplay.BackgroundTransparency = 1
+
+local scroll = Instance.new("ScrollingFrame", mainFrame)
+scroll.Size = UDim2.new(0.9, 0, 0.65, 0)
+scroll.Position = UDim2.new(0.05, 0, 0.3, 0)
+scroll.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.ScrollBarThickness = 4
+
+local layout = Instance.new("UIListLayout", scroll)
+layout.SortOrder = Enum.SortOrder.Name
+layout.Padding = UDim.new(0, 5)
+
+local function updateList()
+    for _, child in pairs(scroll:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+
+    for _, p in pairs(game.Players:GetPlayers()) do
+        if p ~= player then
+            local btn = Instance.new("TextButton", scroll)
+            btn.Text = p.Name
+            btn.Size = UDim2.new(1, -10, 0, 25)
+            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            
+            btn.MouseButton1Click:Connect(function()
+                targetName = p.Name
+                tracking = true
+                status = "tracking"
+                print("Rastreando agora: " .. targetName)
+            end)
+        end
+    end
+    scroll.CanvasSize = UDim2.new(0, 0, 0, #game.Players:GetPlayers() * 30)
+end
+
+task.spawn(function()
+    while true do
+        if tracking and targetName ~= "" then
+            -- Verifica se o jogador saiu do servidor
+            local pObj = game.Players:FindFirstChild(targetName)
+            
+            if not pObj then
+                status = "RQ"
+                statusDisplay.Text = "Alvo: " .. targetName .. " | " .. status
+                hpDisplay.Text = "HP: ---"
+                tracking = false -- Para o rastreio após detectar a saída
+            else
+                local char = game.Workspace:FindFirstChild(targetName)
+                if char then
+                    status = "tracking"
+                    local hpObj = char:FindFirstChild("fakehealth")
+                    statusDisplay.Text = "TT: " .. targetName .. " | " .. status
+                    
+                    if hpObj then
+                        hpDisplay.Text = "HP: " .. math.floor(hpObj.Value)
+                    else
+                        hpDisplay.Text = "HP: ?" 
+                    end
+                else
+                    hpDisplay.Text = "loading"
+                end
+            end
+        else
+            status = (targetName ~= "" and not tracking) and "RQ" or "idle"
+            statusDisplay.Text = "TT: " .. (targetName == "" and "---" or targetName) .. " | " .. status
+            if targetName == "" then hpDisplay.Text = "HP: ---" end
+        end
+        task.wait(0.2)
+    end
+end)
+
+game.Players.PlayerAdded:Connect(updateList)
+game.Players.PlayerRemoving:Connect(updateList)
+updateList()
